@@ -41,18 +41,3 @@ def labelvec_to_str(labels):
     string = [alphabet[x-1] for x in labels if x > 0]
     string = ''.join(string)
     return string
-
-def SJELoss(feat1, feat2):
-    #print(feat1.size(), feat2.size())
-    scores = torch.matmul(feat2, feat1.t())
-    diagonal = scores.diag().view(scores.size(0), 1)
-    diagonal = diagonal.expand_as(scores)
-    cost = (1+scores-diagonal).clamp(min=0)
-    cost[torch.eye(cost.size(0), dtype=torch.uint8)] = 0
-    denom = cost.size(0)*cost.size(1)
-    loss = cost.sum()/denom
-    max_ids = torch.argmax(scores, dim=1)
-    ground_truths = torch.LongTensor(range(scores.size(0))).to(feat1.device)
-    num_correct = (max_ids == ground_truths).sum().float()
-    accuracy = 100*num_correct/cost.size(0)
-    return loss, accuracy
